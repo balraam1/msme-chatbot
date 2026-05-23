@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GovDoc AI - Government of India Document Assistant</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body class="light">
+
+    <!-- Main Content Panel Area -->
+    <div id="main">
+        <!-- Top Navigation Bar -->
+        <div id="topbar">
+            <div class="topbar-left">
+                <span class="active-view-title" id="view-title">Home</span>
+            </div>
+            <div class="topbar-right">
+                <!-- Language Dropdown -->
+                <div class="lang-picker">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" />
+                        <path
+                            d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                    </svg>
+                    <span>English</span>
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+
+                <!-- Sun/Moon Appearance toggle button -->
+                <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path id="theme-toggle-icon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. HOME & ACTIVE CHAT TAB PANEL -->
+        <div class="tab-panel active" id="panel-home">
+            <!-- Scrollable Workspace -->
+            <div id="chat-area">
+                <!-- Sansad Bhavan/India Gate Stylized Watermark Background -->
+                <svg class="parliament-watermark" width="560" height="360" viewBox="0 0 600 400" fill="none"
+                    stroke="currentColor" stroke-width="1.2">
+                    <!-- Sansad Bhavan dome -->
+                    <path d="M300,120 C340,120 370,140 380,180 L220,180 C230,140 260,120 300,120 Z" />
+                    <line x1="300" y1="90" x2="300" y2="120" />
+                    <circle cx="300" cy="87" r="3" />
+                    <rect x="210" y="180" width="180" height="14" rx="2" />
+                    <!-- Dome Pillars -->
+                    <line x1="225" y1="194" x2="225" y2="280" />
+                    <line x1="240" y1="194" x2="240" y2="280" />
+                    <line x1="255" y1="194" x2="255" y2="280" />
+                    <line x1="270" y1="194" x2="270" y2="280" />
+                    <line x1="285" y1="194" x2="285" y2="280" />
+                    <line x1="300" y1="194" x2="300" y2="280" />
+                    <line x1="315" y1="194" x2="315" y2="280" />
+                    <line x1="330" y1="194" x2="330" y2="280" />
+                    <line x1="345" y1="194" x2="345" y2="280" />
+                    <line x1="360" y1="194" x2="360" y2="280" />
+                    <line x1="375" y1="194" x2="375" y2="280" />
+                    <rect x="180" y="280" width="240" height="16" rx="2" />
+                    <rect x="150" y="296" width="300" height="24" rx="3" />
+                    <!-- India Gate side structure line art -->
+                    <path
+                        d="M80,320 L80,240 L100,240 L100,200 L120,200 L120,180 L130,180 L130,165 L170,165 L170,180 L180,180 L180,200 L200,200 L200,240 L220,240 L220,320" />
+                    <path d="M120,320 L120,260 C120,230 180,230 180,260 L180,320" />
+                    <rect x="110" y="150" width="80" height="15" rx="1" />
+                </svg>
+
+                <!-- Initial Empty Welcome screen -->
+                <div id="welcome">
+                    <h1 class="welcome-title" id="welcome-title">How can I help you today?</h1>
+
+                    <!-- Exact Replica side-by-side Suggestion Cards -->
+                    <div id="suggestions">
+                        <!-- Card 1 -->
+                        <div class="suggestion-card" onclick="quickSend('Udyam Registration')">
+                            <div class="suggestion-card-header">
+                                <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
+                                    <span style="font-size: 28px;">📋</span>
+                                </div>
+                                <div class="suggestion-card-titles">
+                                    <span class="s-title" id="card-1-title">Udyam Registration</span>
+                                    <span class="s-sub" id="card-1-sub">Registration process</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 2 -->
+                        <div class="suggestion-card" onclick="quickSend('PMEGP Loan')">
+                            <div class="suggestion-card-header">
+                                <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
+                                    <span style="font-size: 28px;">🏛️</span>
+                                </div>
+                                <div class="suggestion-card-titles">
+                                    <span class="s-title" id="card-2-title">PMEGP Loan</span>
+                                    <span class="s-sub" id="card-2-sub">Scheme details</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="suggestion-card" onclick="startGrievanceFlow()">
+                            <div class="suggestion-card-header">
+                                <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
+                                    <span style="font-size: 28px;">📝</span>
+                                </div>
+                                <div class="suggestion-card-titles">
+                                    <span class="s-title" id="card-3-title">Grievance</span>
+                                    <span class="s-sub" id="card-3-sub">Support & Status</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="suggestion-card" onclick="quickSend('MUDRA Loan')">
+                            <div class="suggestion-card-header">
+                                <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
+                                    <span style="font-size: 28px;">💰</span>
+                                </div>
+                                <div class="suggestion-card-titles">
+                                    <span class="s-title" id="card-4-title">MUDRA Loan</span>
+                                    <span class="s-sub" id="card-4-sub">Scheme details</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5 -->
+                        <div class="suggestion-card" onclick="startSchemeSearch()">
+                            <div class="suggestion-card-header">
+                                <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
+                                    <span style="font-size: 28px;">🔍</span>
+                                </div>
+                                <div class="suggestion-card-titles">
+                                    <span class="s-title" id="card-5-title">Search Schemes</span>
+                                    <span class="s-sub" id="card-5-sub">Find the right scheme</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat history bubbles viewport -->
+                <div id="messages" style="display:none"></div>
+            </div>
+
+            <!-- Chat Bottom Input panel -->
+            <div id="input-area">
+                <div id="input-box-container">
+                    <div id="input-box">
+                        <textarea id="msg-input" rows="1"
+                            placeholder="Type your question or ask anything..."></textarea>
+
+                        <!-- Voice speech microphone assistant -->
+                        <button id="mic-btn" title="Voice Input">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <rect x="9" y="2" width="6" height="11" rx="3"></rect>
+                                <path d="M5 10a7 7 0 0 0 14 0"></path>
+                                <line x1="12" y1="19" x2="12" y2="22"></line>
+                                <line x1="8" y1="22" x2="16" y2="22"></line>
+                            </svg>
+                        </button>
+
+                        <button id="send-btn" title="Send Question">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-privacy-notice">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span id="privacy-notice">All conversations are confidential and secure</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Active Client Logic Integration Scripts -->
+    
+<script src="app.js"></script>
+</body>
+
+</html>

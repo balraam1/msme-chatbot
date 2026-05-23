@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files (CRITICAL: Do not push API keys to Github)
+.env
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# User-specific data/logs
+grievances.txt
+
+# Local databases (Can be rebuilt using scrape_bihar_schemes.py)
+chroma_db/
