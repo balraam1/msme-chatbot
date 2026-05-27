@@ -14,11 +14,24 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "chroma_db")
 
 try:
     client = chromadb.PersistentClient(path=DB_PATH)
-    collection = client.get_collection(name="bihar_msme_schemes")
     HAS_DB = True
 except Exception as e:
     print(f"Warning: Could not connect to ChromaDB at {DB_PATH}: {e}")
     HAS_DB = False
+
+
+def get_collection():
+    """
+    Dynamically retrieve or create the ChromaDB collection.
+    This avoids stale references when the collection is recreated.
+    """
+    if not HAS_DB:
+        return None
+    try:
+        return client.get_or_create_collection(name="bihar_msme_schemes")
+    except Exception as e:
+        print(f"Error fetching/creating ChromaDB collection: {e}")
+        return None
 
 
 def retrieve_context(query: str, k: int = 3) -> str:
@@ -37,8 +50,12 @@ def retrieve_context(query: str, k: int = 3) -> str:
         return "System Warning: RAG Database is currently offline. Please refer to general knowledge or escalate."
 
     try:
+        collection_ref = get_collection()
+        if collection_ref is None:
+            return ""
+
         # Perform semantic search
-        results = collection.query(
+        results = collection_ref.query(
             query_texts=[query],
             n_results=k
         )
@@ -56,3 +73,4 @@ def retrieve_context(query: str, k: int = 3) -> str:
     except Exception as e:
         print(f"RAG Retrieval Error: {e}")
         return ""
+

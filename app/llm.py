@@ -43,10 +43,9 @@ def init_client():
 def _make_error_dict(msg: str) -> dict:
     """Wraps an error string into the structured response dict format."""
     return {
-        "acknowledge": msg,
         "items": [],
         "disclaimer": None,
-        "next_step": "",
+        "next_step": msg,
         "actions": [],
         "raw": msg
     }
@@ -57,7 +56,6 @@ def parse_structured_response(raw: str) -> dict:
     Parses the LLM's structured markdown output into a dict for frontend rendering.
     Returns:
     {
-      "acknowledge": str,
       "items": [{"label": str, "badge": str, "detail": str, "meta": str}],
       "disclaimer": str | None,
       "next_step": str,
@@ -66,7 +64,6 @@ def parse_structured_response(raw: str) -> dict:
     }
     """
     result = {
-        "acknowledge": "",
         "items": [],
         "disclaimer": None,
         "next_step": "",
@@ -75,23 +72,9 @@ def parse_structured_response(raw: str) -> dict:
     }
 
     try:
-        # --- Extract ACKNOWLEDGE ---
-        ack_match = re.search(
-            r'\*\*\[ACKNOWLEDGE\]\*\*\s*\n(.*?)(?=\n\*\*\[|$)', raw, re.DOTALL
-        )
-        if ack_match:
-            result["acknowledge"] = ack_match.group(1).strip()
-        else:
-            # Fallback: first non-empty line
-            for line in raw.split('\n'):
-                stripped = line.strip()
-                if stripped and not stripped.startswith('**['):
-                    result["acknowledge"] = stripped
-                    break
-
         # --- Extract LIST items ---
         list_match = re.search(
-            r'\*\*\[LIST\]\*\*\s*\n(.*?)(?=\n\*\*\[DISCLAIMER\]|\n\*\*\[NEXT STEP\]|\n\*\*\[ACTIONS\]|$)',
+            r'\*\*\[LIST\]\*\*\s*\n(.*?)(?=\n\*\*\[DISCLAIMER\]|\n\*\*\[ACTIONS\]|$)',
             raw, re.DOTALL
         )
         if list_match:
@@ -132,17 +115,13 @@ def parse_structured_response(raw: str) -> dict:
 
         # --- Extract DISCLAIMER ---
         disc_match = re.search(
-            r'\*\*\[DISCLAIMER\]\*\*.*?\n>\s*\u24d8\s*(.+?)(?=\n\s*\n|\n\*\*\[|$)', raw, re.DOTALL
+            r'\*\*\[DISCLAIMER\]\*\*\s*\n(.*?)(?=\n\*\*\[|$)', raw, re.DOTALL
         )
         if disc_match:
             result["disclaimer"] = disc_match.group(1).strip()
 
-        # --- Extract NEXT STEP ---
-        ns_match = re.search(
-            r'\*\*\[NEXT STEP\]\*\*\s*\n(.+?)(?=\n\s*\n|\n\*\*\[|$)', raw, re.DOTALL
-        )
-        if ns_match:
-            result["next_step"] = ns_match.group(1).strip()
+        # --- Extract NEXT STEP (Removed) ---
+        result["next_step"] = ""
 
         # --- Extract ACTIONS ---
         act_match = re.search(
@@ -155,8 +134,8 @@ def parse_structured_response(raw: str) -> dict:
 
     except Exception as e:
         print(f"parse_structured_response error: {e}")
-        # Graceful fallback: raw goes into acknowledge
-        result["acknowledge"] = raw
+        # Graceful fallback: raw goes into raw, next_step remains empty
+        result["next_step"] = ""
 
     return result
 
@@ -172,18 +151,22 @@ def detect_active_language(current_message: str, history: list) -> str:
     all_user_msgs.append(current_message)
 
     for msg in all_user_msgs:
-        if re.search(r'[\u0900-\u097F]', msg):
-            active_language = "CLASS C (Devanagari Hindi)"
+        if re.search(r'[\u0980-\u09FF]', msg):
+            active_language = "CLASS D (Bengali)"
+        elif re.search(r'[\u0900-\u097F]', msg):
+            active_language = "CLASS C (Devanagari)"
         elif re.search(hinglish_trigger_words, msg, re.IGNORECASE):
             active_language = "CLASS B (Hinglish)"
         else:
-            # If no Devanagari and no Hinglish triggers, it defaults to English.
+            # If no Devanagari/Bengali and no Hinglish triggers, it defaults to English.
             # Short affirmatives ("okay"), scheme names ("Udyam"), or standard English set this.
             active_language = "CLASS A (English)"
 
     # Format the strict directive based on the final derived active_language
-    if "CLASS C" in active_language:
-        return "CLASS C (Devanagari Hindi). Output MUST be 100% Devanagari Hindi script. No exceptions."
+    if "CLASS D" in active_language:
+        return "CLASS D (Bengali). Output MUST be 100% Bengali script. No exceptions."
+    elif "CLASS C" in active_language:
+        return "CLASS C (Devanagari). Output MUST be 100% Devanagari script. If the query script is Hindi, Bhojpuri, or Maithili, generate output in the corresponding Devanagari language/dialect matching the user's intent."
     elif "CLASS B" in active_language:
         return "CLASS B (Hinglish). Output MUST be 100% Roman-script Hinglish. ZERO Devanagari script allowed."
     else:
@@ -238,10 +221,7 @@ def get_chat_response(
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Main samajh sakta hoon ki aapko business ke liye sarkari madad chahiye.
-
-**[LIST]**
+            "content": """**[LIST]**
 ### Business Type
 Kya aapka business manufacturing ka hai ya service sector ka?
 
@@ -251,8 +231,8 @@ Aap kis state se hain? Kuch schemes state-specific hoti hain.
 ### Stage
 Kya aap naya business shuru kar rahe hain ya existing business expand karna chahte hain?
 
-**[NEXT STEP]**
-**Agle Kadam:** Upar ke sawaalon ka jawab dijiye toh main aapke liye sahi scheme suggest karunga. Note: Main apply nahi kar sakta — visit msme.gov.in
+**[DISCLAIMER]**
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**
 - `Udyam Registration kaise karte hain?`
@@ -266,30 +246,47 @@ Kya aap naya business shuru kar rahe hain ya existing business expand karna chah
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-I can help you with Udyam Registration. What would you like to know?
+            "content": """**[LIST]**
+### Step 1: Visit the Official Udyam Portal
+Go to the Government of India’s official Udyam Registration portal.
+*Portal: udyamregistration.gov.in*
 
-**[LIST]**
-### Registration Process
-Step-by-step guidance on how to apply on the official portal.
+### Step 2: Select Registration Type
+Click “For New Entrepreneurs who are not Registered yet as MSME” for fresh registration or select migration options.
+*Portal: udyamregistration.gov.in*
 
-### Documents Required
-Find out what details you need before starting the application.
+### Step 3: Aadhaar Verification
+Enter Aadhaar Number and Entrepreneur Name (exactly as per Aadhaar), then click “Validate & Generate OTP” and complete OTP verification.
+*Portal: udyamregistration.gov.in*
 
-### Cost and Fees
-Learn about the cost involved in registering your business.
+### Step 4: PAN Verification
+Enter PAN Number and Organization Type. The portal auto-fetches tax details linked to PAN.
+*Portal: udyamregistration.gov.in*
 
-### Key Benefits
-Discover the government advantages you get after registering.
+### Step 5: Fill Business Details
+Enter Business Name, Address, Contact details, Bank Details, Employee Count, and NIC code.
+*Portal: udyamregistration.gov.in*
 
-**[NEXT STEP]**
-**Next step:** Please select one of the specific questions below so I can guide you further. Note: I cannot complete the registration for you — visit udyamregistration.gov.in
+### Step 6: Submit Application
+Review all details carefully and submit the application using final OTP authentication.
+*Portal: udyamregistration.gov.in*
+
+### Step 7: Receive Udyam Certificate
+After successful submission, a 19-digit Udyam Registration Number (URN) is generated and Udyam Certificate with QR Code is issued.
+*Portal: udyamregistration.gov.in*
+
+### Step 8: Download Certificate
+Download your final certificate from the print login page on the portal.
+*Portal: udyamregistration.gov.in*
+
+**[DISCLAIMER]**
+Note: I can only guide you — visit udyamregistration.gov.in for more information.
 
 **[ACTIONS]**
-- `How to register for Udyam?`
 - `What documents are required for Udyam?`
 - `Is Udyam Registration free?`
-- `What are the benefits of Udyam?`"""
+- `What are the benefits of Udyam?`
+- `How to update my existing Udyam certificate?`"""
         },
         {
             "role": "user",
@@ -297,24 +294,41 @@ Discover the government advantages you get after registering.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Here is the step-by-step process for Udyam Registration.
+            "content": """**[LIST]**
+### Step 1: Visit the Official Udyam Portal
+Go to the Government of India’s official Udyam Registration portal.
+*Portal: udyamregistration.gov.in*
 
-**[LIST]**
-### Visit Official Portal
-Go to the official udyamregistration.gov.in website. Ensure you do not pay any fees to fake sites.
+### Step 2: Select Registration Type
+Click “For New Entrepreneurs who are not Registered yet as MSME” for fresh registration or select migration options.
+*Portal: udyamregistration.gov.in*
 
-### Enter Aadhaar Details
-Provide the Aadhaar number of the proprietor, partner, or director and validate via OTP.
+### Step 3: Aadhaar Verification
+Enter Aadhaar Number and Entrepreneur Name (exactly as per Aadhaar), then click “Validate & Generate OTP” and complete OTP verification.
+*Portal: udyamregistration.gov.in*
 
-### Fill Business Details
-Enter your PAN, bank account details, and business activity information (NIC code).
+### Step 4: PAN Verification
+Enter PAN Number and Organization Type. The portal auto-fetches tax details linked to PAN.
+*Portal: udyamregistration.gov.in*
 
-### Download Certificate
-Submit the form with OTP and instantly download your Udyam Registration Certificate.
+### Step 5: Fill Business Details
+Enter Business Name, Address, Contact details, Bank Details, Employee Count, and NIC code.
+*Portal: udyamregistration.gov.in*
 
-**[NEXT STEP]**
-**Next step:** Gather your Aadhaar and PAN before starting. Note: I cannot complete the registration for you — visit udyamregistration.gov.in
+### Step 6: Submit Application
+Review all details carefully and submit the application using final OTP authentication.
+*Portal: udyamregistration.gov.in*
+
+### Step 7: Receive Udyam Certificate
+After successful submission, a 19-digit Udyam Registration Number (URN) is generated and Udyam Certificate with QR Code is issued.
+*Portal: udyamregistration.gov.in*
+
+### Step 8: Download Certificate
+Download your final certificate from the print login page on the portal.
+*Portal: udyamregistration.gov.in*
+
+**[DISCLAIMER]**
+Note: I can only guide you — visit udyamregistration.gov.in for more information.
 
 **[ACTIONS]**
 - `Is Udyam Registration completely free?`
@@ -328,10 +342,7 @@ Submit the form with OTP and instantly download your Udyam Registration Certific
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Great question about PMEGP subsidy for your food processing unit in rural Maharashtra.
-
-**[LIST]**
+            "content": """**[LIST]**
 ### General Category Subsidy
 Rural areas generally qualify for 25% subsidy on project cost under PMEGP.
 *Portal: kviconline.gov.in/pmegpplus*
@@ -345,9 +356,7 @@ Manufacturing projects can get up to ₹25 lakh, service projects up to ₹10 la
 
 **[DISCLAIMER]**
 > ⓘ Subsidy rates and loan limits may change — verify at kviconline.gov.in/pmegpplus
-
-**[NEXT STEP]**
-**Next step:** Check your exact eligibility and apply online. Note: I cannot apply for you — visit kviconline.gov.in/pmegpplus
+Note: I can only guide you — visit kviconline.gov.in/pmegpplus for more information.
 
 **[ACTIONS]**
 - `What documents do I need for PMEGP?`
@@ -361,11 +370,8 @@ Manufacturing projects can get up to ₹25 lakh, service projects up to ₹10 la
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-I can help you with your MSME grievance. What would you like to do?
-
-**[NEXT STEP]**
-**Next step:** Please select one of the options below. Note: I can only guide you — visit msme.gov.in
+            "content": """**[DISCLAIMER]**
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**
 - `Register a Complaint`
@@ -377,13 +383,8 @@ I can help you with your MSME grievance. What would you like to do?
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Please type your complete grievance in the chat so I can generate a ticket for you.
-
-**[NEXT STEP]**
-**Next step:** Enter your grievance text below.
-
-**[ACTIONS]**"""
+            "content": """**[DISCLAIMER]**
+Please type your complete grievance in the chat so I can generate a ticket for you."""
         },
         {
             "role": "user",
@@ -391,15 +392,22 @@ Please type your complete grievance in the chat so I can generate a ticket for y
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Main aapki madad karna chahta hoon! Pehle thoda samajhna hoga ki aapko kis cheez mein help chahiye.
+            "content": """**[LIST]**
+### Scheme Guidance
+Main aapko central aur state govt schemes ke baare mein eligibility, benefits aur process batane mein help kar sakta hoon.
 
-**[LIST]**
-### [SHOW_WELCOME_CARDS]
-Select an option above to get started.
+### Policy Discovery
+Aapke business stage aur type ke hisab se main sahi schemes aur policies search karne mein madad kar sakta hoon.
 
-**[NEXT STEP]**
-**Agle Kadam:** Batayein ki upar mein se kaunsi cheez mein madad chahiye. Note: Main sirf guide kar sakta hoon — visit msme.gov.in
+### Grievance Assistance
+Aap complaints register aur status check kar sakte hain. Main ticket create karne mein help karunga.
+
+### Process Walkthroughs
+Udyam registration, MUDRA loan, aur PMEGP loan ke steps seekhein.
+
+**[DISCLAIMER]**
+[SHOW_WELCOME_CARDS]
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**"""
         },
@@ -409,15 +417,22 @@ Select an option above to get started.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-I can only assist with MSME government schemes and business registrations. Please select an option below.
+            "content": """**[LIST]**
+### Scheme Guidance
+I can provide information on various central and state government schemes for MSMEs, including eligibility, benefits, and application processes.
 
-**[LIST]**
-### [SHOW_WELCOME_CARDS]
-Select an option above to get started.
+### Policy Discovery
+I can help you find relevant government policies based on your business type and stage.
 
-**[NEXT STEP]**
-**Next step:** Tell me what you need help with. Note: I can only guide you — visit msme.gov.in
+### Grievance Assistance
+I can assist you in understanding how to file, track, and escalate complaints related to MSMEs.
+
+### Process Walkthroughs
+I can provide step-by-step guidance for various MSME-related processes, such as registration and application procedures.
+
+**[DISCLAIMER]**
+[SHOW_WELCOME_CARDS]
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**"""
         },
@@ -427,15 +442,22 @@ Select an option above to get started.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Main sirf MSME government schemes aur business registration mein help kar sakta hoon. Kripya niche diye gaye options mein se chunein.
+            "content": """**[LIST]**
+### Scheme Guidance
+Main aapko central aur state govt schemes ke baare mein eligibility, benefits aur process batane mein help kar sakta hoon.
 
-**[LIST]**
-### [SHOW_WELCOME_CARDS]
-Select an option above to get started.
+### Policy Discovery
+Aapke business stage aur type ke hisab se main sahi schemes aur policies search karne mein madad kar sakta hoon.
 
-**[NEXT STEP]**
-**Agle Kadam:** Batayein ki upar mein se kaunsi cheez mein madad chahiye. Note: Main sirf guide kar sakta hoon — visit msme.gov.in
+### Grievance Assistance
+Aap complaints register aur status check kar sakte hain. Main ticket create karne mein help karunga.
+
+### Process Walkthroughs
+Udyam registration, MUDRA loan, aur PMEGP loan ke steps seekhein.
+
+**[DISCLAIMER]**
+[SHOW_WELCOME_CARDS]
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**"""
         },
@@ -445,15 +467,22 @@ Select an option above to get started.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Zaroor, main aapse Hinglish mein baat karunga. Batayein main aapki kis tarah madad kar sakta hoon?
+            "content": """**[LIST]**
+### Scheme Guidance
+Main aapko central aur state govt schemes ke baare mein eligibility, benefits aur process batane mein help kar sakta hoon.
 
-**[LIST]**
-### [SHOW_WELCOME_CARDS]
-Select an option above to get started.
+### Policy Discovery
+Aapke business stage aur type ke hisab se main sahi schemes aur policies search karne mein madad kar sakta hoon.
 
-**[NEXT STEP]**
-**Agle Kadam:** Upar diye gaye vikalpon mein se ek chunein. Note: Main sirf guide kar sakta hoon — visit msme.gov.in
+### Grievance Assistance
+Aap complaints register aur status check kar sakte hain. Main ticket create karne mein help karunga.
+
+### Process Walkthroughs
+Udyam registration, MUDRA loan, aur PMEGP loan ke steps seekhein.
+
+**[DISCLAIMER]**
+[SHOW_WELCOME_CARDS]
+Note: I can only guide you — visit msme.gov.in for more information.
 
 **[ACTIONS]**"""
         },
@@ -463,15 +492,22 @@ Select an option above to get started.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-मैं आपकी मदद करने के लिए यहाँ हूँ! कृपया बताएं कि आपको किस प्रकार की सहायता चाहिए।
+            "content": """**[LIST]**
+### योजना मार्गदर्शन
+मैं आपको एमएसएमई के लिए विभिन्न केंद्रीय और राज्य सरकारी योजनाओं के बारे में पात्रता, लाभ और आवेदन प्रक्रियाओं की जानकारी दे सकता हूँ।
 
-**[LIST]**
-### [SHOW_WELCOME_CARDS]
-Select an option above to get started.
+### नीति खोज
+मैं आपके व्यवसाय के प्रकार और चरण के आधार पर प्रासंगिक सरकारी नीतियों को खोजने में आपकी सहायता कर सकता हूँ।
 
-**[NEXT STEP]**
-**अगले कदम:** ऊपर दिए गए विकल्पों में से एक चुनें। नोट: मैं केवल मार्गदर्शन कर सकता हूँ — msme.gov.in पर जाएँ।
+### शिकायत सहायता
+मैं एमएसएमई से संबंधित शिकायतों को दर्ज करने, ट्रैक करने और आगे बढ़ाने में आपकी सहायता कर सकता हूँ।
+
+### प्रक्रिया विवरण
+मैं पंजीकरण और आवेदन प्रक्रियाओं जैसी विभिन्न एमएसएमई-संबंधित प्रक्रियाओं के लिए चरण-दर-चरण मार्गदर्शन प्रदान कर सकता हूँ।
+
+**[DISCLAIMER]**
+[SHOW_WELCOME_CARDS]
+नोट: मैं केवल मार्गदर्शन कर सकता हूँ — msme.gov.in पर जाएँ।
 
 **[ACTIONS]**"""
         },
@@ -481,11 +517,8 @@ Select an option above to get started.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Aapki jankari ke liye shukriya. Main aapki shikayat system mein darj kar raha hoon.
-
-**[NEXT STEP]**
-**Agle Kadam:** [GENERATE_TICKET]
+            "content": """**[DISCLAIMER]**
+[GENERATE_TICKET]
 
 **[ACTIONS]**"""
         },
@@ -495,11 +528,8 @@ Aapki jankari ke liye shukriya. Main aapki shikayat system mein darj kar raha ho
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Please provide your ticket number to check the status.
-
-**[NEXT STEP]**
-**Next step:** Enter your exact Ticket ID (e.g., TKT-MSME-123456) in the chat below.
+            "content": """**[DISCLAIMER]**
+Enter your exact Ticket ID (e.g., TKT-MSME-123456) in the chat below.
 
 **[ACTIONS]**"""
         },
@@ -509,11 +539,8 @@ Please provide your ticket number to check the status.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Checking the database for your ticket TKT-MSME-847291.
-
-**[NEXT STEP]**
-**Next step:** [CHECK_TICKET: TKT-MSME-847291]
+            "content": """**[DISCLAIMER]**
+[CHECK_TICKET: TKT-MSME-847291]
 
 **[ACTIONS]**"""
         },
@@ -523,10 +550,7 @@ Checking the database for your ticket TKT-MSME-847291.
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Based on your profile, here are all the relevant MSME schemes for your new manufacturing venture in Bihar.
-
-**[LIST]**
+            "content": """**[LIST]**
 ### Mukhyamantri Udyami Yojana
 This scheme provides ₹10 Lakh financial assistance (₹5 Lakh grant + ₹5 Lakh loan) to SC/ST/OBC/EBC youth in Bihar setting up new MSME units.
 *Portal: industries.bih.nic.in*
@@ -541,9 +565,7 @@ Provides stamp duty exemption, land conversion fee waiver, and interest subventi
 
 **[DISCLAIMER]**
 > ⓘ Benefit amounts and eligibility criteria may change — verify at industries.bih.nic.in
-
-**[NEXT STEP]**
-**Next step:** Tell me which scheme you want to learn more about. Note: I can only guide you — visit industries.bih.nic.in
+Note: I can only guide you — visit industries.bih.nic.in for more information.
 
 **[ACTIONS]**
 - `Tell me more about Mukhyamantri Udyami Yojana`
@@ -556,19 +578,14 @@ Provides stamp duty exemption, land conversion fee waiver, and interest subventi
         },
         {
             "role": "assistant",
-            "content": """**[ACKNOWLEDGE]**
-Based on your profile as a student with disability, here is the most relevant scheme for you.
-
-**[LIST]**
+            "content": """**[LIST]**
 ### National Overseas Scholarship For Students With Disabilities
 This scheme provides financial assistance to students with benchmark disabilities for pursuing higher education abroad. It is a central government scheme open to all Indian states.
 *Portal: scholarship.gov.in*
 
 **[DISCLAIMER]**
 > ⓘ Eligibility criteria and income limits may change — verify at scholarship.gov.in
-
-**[NEXT STEP]**
-**Next step:** Check your eligibility and apply online. Note: I can only guide you — visit scholarship.gov.in
+Note: I can only guide you — visit scholarship.gov.in for more information.
 
 **[ACTIONS]**
 - `What is the eligibility for the Disability Scholarship?`

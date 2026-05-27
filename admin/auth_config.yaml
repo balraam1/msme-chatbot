@@ -1,0 +1,13 @@
+credentials:
+  usernames:
+    admin:
+      email: admin@msmesaathi.gov.in
+      name: MSME Saathi Admin
+      password: "" # Populated from .env at runtime
+cookie:
+  expiry_days: 0.33 # ~8 hours
+  key: "admin_signature_cookie_key"
+  name: "admin_auth_cookie"
+pre-authorized:
+  emails:
+    - admin@msmesaathi.gov.in

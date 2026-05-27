@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GovDoc AI - Government of India Document Assistant</title>
+    <title>MSME Saathi</title>
     <!-- Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=1.1" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
@@ -23,6 +23,12 @@
                 <span class="active-view-title" id="view-title">Home</span>
             </div>
             <div class="topbar-right">
+                <!-- Global TTS Checkbox -->
+                <label class="tts-toggle-container" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; user-select: none; margin-right: 8px;">
+                    <input type="checkbox" id="global-tts-checkbox" style="width: 16px; height: 16px; accent-color: var(--color-primary);">
+                    <span id="tts-checkbox-label">Speak Replies (बोलें)</span>
+                </label>
+
                 <!-- Language Dropdown -->
                 <div class="lang-picker">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -30,11 +36,13 @@
                         <path
                             d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
                     </svg>
-                    <span>English</span>
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"
-                        viewBox="0 0 24 24">
-                        <path d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <select id="lang-select" style="background: transparent; border: none; font-size: 13px; font-weight: 500; color: inherit; cursor: pointer; outline: none; font-family: inherit;">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="bho">भोजपुरी (Bhojpuri)</option>
+                        <option value="mai">मैथिली (Maithili)</option>
+                        <option value="ben">বাংলা (Bengali)</option>
+                    </select>
                 </div>
 
                 <!-- Sun/Moon Appearance toggle button -->
@@ -86,7 +94,7 @@
                     <!-- Exact Replica side-by-side Suggestion Cards -->
                     <div id="suggestions">
                         <!-- Card 1 -->
-                        <div class="suggestion-card" onclick="quickSend('Udyam Registration')">
+                        <div class="suggestion-card" onclick="quickSend(document.getElementById('card-1-title').textContent.trim())">
                             <div class="suggestion-card-header">
                                 <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
                                     <span style="font-size: 28px;">📋</span>
@@ -99,7 +107,7 @@
                         </div>
                         
                         <!-- Card 2 -->
-                        <div class="suggestion-card" onclick="quickSend('PMEGP Loan')">
+                        <div class="suggestion-card" onclick="quickSend(document.getElementById('card-2-title').textContent.trim())">
                             <div class="suggestion-card-header">
                                 <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
                                     <span style="font-size: 28px;">🏛️</span>
@@ -125,7 +133,7 @@
                         </div>
 
                         <!-- Card 4 -->
-                        <div class="suggestion-card" onclick="quickSend('MUDRA Loan')">
+                        <div class="suggestion-card" onclick="quickSend(document.getElementById('card-4-title').textContent.trim())">
                             <div class="suggestion-card-header">
                                 <div class="suggestion-card-icon-container" style="background:transparent; padding:0; justify-content:flex-start;">
                                     <span style="font-size: 28px;">💰</span>
@@ -197,8 +205,7 @@
     </div>
 
     <!-- Active Client Logic Integration Scripts -->
-    
-<script src="app.js"></script>
+    <audio id="tts-player" hidden></audio>
+<script src="app.js?v=1.11"></script>
 </body>
-
 </html>

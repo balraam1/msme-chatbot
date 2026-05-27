@@ -2,10 +2,7 @@ import sys
 sys.path.insert(0, '.')
 from app.llm import parse_structured_response
 
-test_raw = """**[ACKNOWLEDGE]**
-यह बहुत अच्छा सवाल है।
-
-**[LIST]**
+test_raw = """**[LIST]**
 ### ✅ Eligibility `⚠️ Verify करें`
 SC/ST category ke liye 35% subsidy milti hai.
 *Portal: kviconline.gov.in/pmegpplus*
@@ -23,14 +20,12 @@ SC/ST category ke liye 35% subsidy milti hai.
 
 result = parse_structured_response(test_raw)
 
-print(f"acknowledge: {repr(result['acknowledge'])}")
 print(f"items count: {len(result['items'])}")
 print(f"items: {result['items']}")
 print(f"disclaimer: {repr(result['disclaimer'])}")
 print(f"next_step: {repr(result['next_step'])}")
 print(f"actions: {result['actions']}")
 
-assert result['acknowledge'] == 'यह बहुत अच्छा सवाल है।', f'FAIL ack: {repr(result["acknowledge"])}'
 assert len(result['items']) == 1, f'FAIL items count: {len(result["items"])}'
 assert result['items'][0]['badge'] == '⚠️ Verify करें', f'FAIL badge: {repr(result["items"][0]["badge"])}'
 assert result['disclaimer'] is not None, 'FAIL: disclaimer missing'

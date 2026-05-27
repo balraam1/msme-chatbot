@@ -1906,7 +1906,7 @@
             display: flex;
             align-items: flex-start;
             gap: 6px;
-            margin: 0 0 10px 0;
+            margin: 0 0 10px 20px;
             color: var(--text-muted);
             line-height: 1.5;
         }
@@ -2008,4 +2008,124 @@
     background: var(--bg-input);
     color: var(--text-primary);
     transition: var(--transition);
+}
+
+/* Speaker Button & Animation Styles */
+.speaker-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 50%;
+    transition: var(--transition);
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    z-index: 2;
+}
+
+.bubble.assistant {
+    padding-bottom: 28px !important; /* Ensure space for the speaker button at the bottom-right */
+}
+
+.speaker-btn:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.speaker-btn.playing {
+    color: var(--color-success);
+    background: rgba(16, 185, 129, 0.1);
+    animation: speakerPulse 1.2s infinite;
+}
+
+@keyframes speakerPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Message Footer & Privacy Notice Styling */
+.message-footer-container {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(123, 142, 175, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.message-disclaimer-note {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-weight: 500;
+    margin-bottom: 2px;
+    text-align: center; /* Center text */
+    width: 100%;
+    padding: 0 28px; /* Avoid speaker button overlap symmetrically */
+    box-sizing: border-box;
+}
+
+.message-privacy-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center horizontally */
+    gap: 6px;
+    font-size: 11px;
+    color: #7b8eaf;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    width: 100%;
+    padding: 0 28px; /* Avoid speaker button overlap symmetrically */
+    box-sizing: border-box;
+}
+
+.privacy-lock-icon {
+    flex-shrink: 0;
+    color: #7b8eaf;
+}
+
+/* Privacy Notice Card (Centered and Shortened) */
+.msme-privacy-notice-card {
+    font-size: 11px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin: 12px auto; /* Centered horizontally */
+    max-width: 82%; /* Shortened size */
+    color: var(--text-secondary);
+    line-height: 1.5;
+    text-align: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.msme-privacy-notice-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.msme-privacy-notice-card-body {
+    color: var(--text-secondary);
+    font-weight: 400;
 }
