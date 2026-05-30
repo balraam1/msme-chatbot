@@ -56,7 +56,7 @@ Respond ONLY by calling the extract_grievance_fields function.
 Text: {raw_text}"""
         
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash-lite",
+            model_name="gemini-2.5-flash",
             tools=[extract_grievance_fields]
         )
         

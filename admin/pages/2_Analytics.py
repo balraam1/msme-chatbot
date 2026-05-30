@@ -21,10 +21,10 @@ if "authentication_status" not in st.session_state or not st.session_state["auth
     st.error("Please login from the main page first.")
     st.stop()
 
-st.title("📊 Chatbot Analytics Dashboard")
+st.title("Chatbot Analytics Dashboard")
 
 # Date range selector (default: last 30 days)
-st.write("### 📅 Date Filters")
+st.write("### Date Filters")
 col_f1, col_f2 = st.columns(2)
 with col_f1:
     start_date = st.date_input("Start Date", value=datetime.now().date() - timedelta(days=30))
@@ -62,12 +62,13 @@ if df_events.empty:
     st.stop()
 
 # Initialize tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📈 Overview", 
-    "🎯 Intent & Schemes", 
-    "🎯 Grievance Funnel", 
-    "⚡ Performance",
-    "⚠️ Drop-off Analysis"
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "Overview", 
+    "Intent & Schemes", 
+    "Grievance Funnel", 
+    "Performance",
+    "Drop-off Analysis",
+    "Sentiment Insights"
 ])
 
 # ---------------------------------------------------------------------------
@@ -147,13 +148,8 @@ with tab2:
             names="language",
             color_discrete_sequence=["#C4FF32", "#3B82F6", "#8B5CF6", "#F59E0B"]
         )
-        fig_lang.update_layout(
-            paper_bgcolor="#141417",
-            plot_bgcolor="#141417",
-            font_family="Syne, sans-serif",
-            font_color="#F2F2F5",
-            margin=dict(l=20, r=20, t=20, b=20)
-        )
+        fig_lang = update_plotly_layout(fig_lang, light_primary="#22c55e")
+        fig_lang.update_layout(margin=dict(l=20, r=20, t=20, b=20))
         st.plotly_chart(fig_lang, use_container_width=True)
         
     st.subheader("Top Mentioned MSME Schemes")
@@ -215,10 +211,10 @@ with tab3:
         st.plotly_chart(fig_type, use_container_width=True)
 
     st.write("---")
-    st.write("### 📋 Export Events Log")
+    st.write("### Export Events Log")
     csv_events = df_events.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="📥 Download Events Log as CSV",
+        label="Download Events Log as CSV",
         data=csv_events,
         file_name=f"events_log_{start_date}_to_{end_date}.csv",
         mime="text/csv"
@@ -302,3 +298,91 @@ with tab5:
     )
     fig_drop = update_plotly_layout(fig_drop)
     st.plotly_chart(fig_drop, use_container_width=True)
+
+# ---------------------------------------------------------------------------
+# TAB 6 — SENTIMENT INSIGHTS
+# ---------------------------------------------------------------------------
+with tab6:
+    st.header("Citizen Sentiment Analysis")
+    
+    # Filter messages only
+    df_sent = df_events[df_events["event_type"] == "message"].copy()
+    
+    if not df_sent.empty:
+        # Fill missing values for legacy rows
+        if "sentiment" in df_sent.columns:
+            df_sent["sentiment"] = df_sent["sentiment"].fillna("Neutral")
+        else:
+            df_sent["sentiment"] = "Neutral"
+            
+        sentiment_counts = df_sent["sentiment"].value_counts().reset_index()
+        sentiment_counts.columns = ["sentiment", "count"]
+        
+        # Consistent color map for sentiments
+        color_map = {
+            "Positive": "#22C55E",    # Emerald green
+            "Neutral": "#3B82F6",     # Blue
+            "Frustrated": "#F59E0B",  # Orange
+            "Angry": "#FF4455"        # Red
+        }
+        
+        col_t6_1, col_t6_2 = st.columns(2)
+        
+        with col_t6_1:
+            st.subheader("Overall Sentiment Share")
+            fig_sent_pie = px.pie(
+                sentiment_counts,
+                values="count",
+                names="sentiment",
+                color="sentiment",
+                color_discrete_map=color_map
+            )
+            fig_sent_pie = update_plotly_layout(fig_sent_pie)
+            fig_sent_pie.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+            st.plotly_chart(fig_sent_pie, use_container_width=True)
+            
+        with col_t6_2:
+            st.subheader("Sentiment Intensity Counts")
+            fig_sent_bar = px.bar(
+                sentiment_counts,
+                x="sentiment",
+                y="count",
+                color="sentiment",
+                color_discrete_map=color_map
+            )
+            fig_sent_bar = update_plotly_layout(fig_sent_bar)
+            st.plotly_chart(fig_sent_bar, use_container_width=True)
+            
+        # Sentiment vs Intent Stacked Chart
+        st.subheader("Sentiment Distribution by Conversation Intent")
+        if "intent" in df_sent.columns:
+            intent_sent = df_sent.groupby(["intent", "sentiment"]).size().reset_index(name="count")
+            fig_intent_sent = px.bar(
+                intent_sent,
+                x="intent",
+                y="count",
+                color="sentiment",
+                color_discrete_map=color_map,
+                barmode="stack"
+            )
+            fig_intent_sent = update_plotly_layout(fig_intent_sent)
+            st.plotly_chart(fig_intent_sent, use_container_width=True)
+            
+        # High-Alert queries feed
+        st.subheader("Citizen Queries Needing Attention")
+        high_alert_queries = df_sent[df_sent["sentiment"].isin(["Frustrated", "Angry"])]
+        if not high_alert_queries.empty:
+            alert_display = high_alert_queries.sort_values(by="timestamp", ascending=False).head(10)
+            if "query_text" in alert_display.columns:
+                display_df = alert_display[["timestamp", "intent", "sentiment", "query_text"]].copy()
+                display_df.columns = ["Timestamp", "Intent", "Sentiment", "User Query"]
+                display_df["User Query"] = display_df["User Query"].fillna("N/A")
+            else:
+                display_df = alert_display[["timestamp", "intent", "sentiment"]].copy()
+                display_df.columns = ["Timestamp", "Intent", "Sentiment"]
+                
+            st.dataframe(display_df, use_container_width=True)
+        else:
+            st.info("No frustrated or angry user queries logged in this date range.")
+    else:
+        st.info("No query logs available to calculate sentiment distribution.")

@@ -19,7 +19,7 @@ if "authentication_status" not in st.session_state or not st.session_state["auth
     st.error("Please login from the main page first.")
     st.stop()
 
-st.title("🎫 Grievance Management Center")
+st.title("Grievance Management Center")
 
 # Helper function to fetch grievances
 def fetch_grievances():
@@ -38,7 +38,7 @@ if df.empty:
 df["created_at"] = pd.to_datetime(df["created_at"], format='mixed')
 
 # --- SECTION A: FILTERS ---
-st.write("### 🔍 Filters")
+st.write("### Filters")
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -98,7 +98,7 @@ if search_query:
 st.markdown(f"**Found {len(filtered_df)} matching tickets.**")
 
 # --- SECTION B: TABLE ---
-st.write("### 🎫 Grievances List")
+st.write("### Grievances List")
 
 # pandas styling for Severity
 def color_severity(val):
@@ -128,7 +128,7 @@ st.dataframe(
 )
 
 # Ticket Selection for Details
-st.write("### 🔍 Inspect & Update Ticket")
+st.write("### Inspect & Update Ticket")
 ticket_ids = ["-- Select Ticket ID --"] + list(filtered_df["ticket_id"].unique())
 selected_ticket_id = st.selectbox("Select a ticket to view details or modify status:", options=ticket_ids)
 
@@ -142,7 +142,7 @@ if selected_ticket_id != "-- Select Ticket ID --":
     with col_d1:
         st.write(f"#### Ticket: **{ticket_data['ticket_id']}**")
         st.write(f"**Date Created:** {ticket_data['created_at']}")
-        st.write(f"📞 **Contact Number:** `{ticket_data['contact_number'] or 'N/A'}`")
+        st.write(f"**Contact Number:** `{ticket_data['contact_number'] or 'N/A'}`")
         st.write(f"**Associated Scheme:** `{ticket_data['scheme_name']}`")
         st.write(f"**Grievance Type:** `{ticket_data['grievance_type']}`")
         st.write(f"**Severity Level:** `{ticket_data['severity']}`")
@@ -152,18 +152,18 @@ if selected_ticket_id != "-- Select Ticket ID --":
 
     with col_d2:
         st.write("#### Extracted Metadata Entities")
-        st.write(f"🏦 **Bank Name:** {ticket_data['entity_bank'] or 'N/A'}")
-        st.write(f"💰 **Amount mentioned:** {ticket_data['entity_amount'] or 'N/A'}")
+        st.write(f"**Bank Name:** {ticket_data['entity_bank'] or 'N/A'}")
+        st.write(f"**Amount mentioned:** {ticket_data['entity_amount'] or 'N/A'}")
         delay_val = ticket_data['entity_duration_days']
         delay_str = f"{delay_val} days" if delay_val else 'N/A'
-        st.write(f"⏳ **Duration of delay:** {delay_str}")
+        st.write(f"**Duration of delay:** {delay_str}")
         
         st.write("**English Summary:**")
         st.markdown(f"> *{ticket_data['summary_en']}*")
         st.write("**Hindi Summary:**")
         st.markdown(f"> *{ticket_data['summary_hi']}*")
 
-    st.write("#### 🔧 Update Ticket Status")
+    st.write("#### Update Ticket Status")
     
     status_options = ["Open", "In Progress", "Resolved", "Closed"]
     current_status_idx = status_options.index(ticket_data["status"]) if ticket_data["status"] in status_options else 0
@@ -194,7 +194,7 @@ if selected_ticket_id != "-- Select Ticket ID --":
             st.rerun()
             
     with col_btn2:
-        if st.button("🔴 Delete Ticket", use_container_width=True):
+        if st.button("Delete Ticket", use_container_width=True):
             conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute("DELETE FROM grievances WHERE ticket_id = ?", (selected_ticket_id,))
@@ -220,7 +220,7 @@ if selected_ticket_id != "-- Select Ticket ID --":
             single_ticket_json[k] = str(v)
             
     st.download_button(
-        label="📥 Export This Ticket as JSON",
+        label="Export This Ticket as JSON",
         data=json.dumps(single_ticket_json, indent=2, ensure_ascii=False),
         file_name=f"ticket_{selected_ticket_id}.json",
         mime="application/json"
@@ -228,7 +228,7 @@ if selected_ticket_id != "-- Select Ticket ID --":
 
 # --- SECTION D: BULK ACTIONS ---
 st.markdown("---")
-st.write("### 📤 Bulk Actions")
+st.write("### Bulk Actions")
 
 # Convert full filtered dataframe to CSV
 csv_data = filtered_df.to_csv(index=False).encode('utf-8')
@@ -244,14 +244,14 @@ bulk_json = json.dumps(bulk_dict, indent=2, ensure_ascii=False).encode('utf-8')
 col_b1, col_b2 = st.columns(2)
 with col_b1:
     st.download_button(
-        label="📥 Export All Filtered as CSV",
+        label="Export All Filtered as CSV",
         data=csv_data,
         file_name=f"grievances_export_{datetime.now().strftime('%Y%m%d')}.csv",
         mime="text/csv"
     )
 with col_b2:
     st.download_button(
-        label="📥 Export All Filtered as JSON",
+        label="Export All Filtered as JSON",
         data=bulk_json,
         file_name=f"grievances_export_{datetime.now().strftime('%Y%m%d')}.json",
         mime="application/json"

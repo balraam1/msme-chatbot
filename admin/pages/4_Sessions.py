@@ -15,7 +15,7 @@ if "authentication_status" not in st.session_state or not st.session_state["auth
     st.error("Please login from the main page first.")
     st.stop()
 
-st.title("🖥️ Active User Sessions")
+st.title("Active User Sessions")
 
 # Fetch session stats and list
 def fetch_sessions():
@@ -46,14 +46,14 @@ else:
     )
     
     # Action buttons for each active session
-    st.write("### ⚙️ Session Actions")
+    st.write("### Session Actions")
     for session in sessions_list:
         sid = session["session_id"]
         sid_short = sid[:10] + "..." if len(sid) > 10 else sid
         
         col1, col2 = st.columns([8, 2])
         with col1:
-            st.write(f"🖥️ **Session {sid_short}** ({session['message_count']} messages, last active {session['last_active']})")
+            st.write(f"**Session {sid_short}** ({session['message_count']} messages, last active {session['last_active']})")
         with col2:
             if st.button("Terminate Session", key=f"term_{sid}", type="primary"):
                 try:

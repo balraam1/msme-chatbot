@@ -20,8 +20,8 @@ if "start_time" not in st.session_state:
 # Configure page
 st.set_page_config(
     page_title="MSME Saathi — Backend Admin Panel",
-    page_icon="🎫",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Apply custom theme
@@ -72,8 +72,8 @@ elif authentication_status:
     with top_col:
         st.markdown(
             """
-            <h1 style="text-align:left; font-family:'Syne',sans-serif; font-size:26px; font-weight:700; color:#F2F2F5; letter-spacing:-0.02em; margin:8px 0; padding:0;">
-                🎫 MSME Saathi — Administrative Control Center
+            <h1 style="text-align:left; font-family:'Syne',sans-serif; font-size:26px; font-weight:700; color:var(--text-color); letter-spacing:-0.02em; margin:8px 0; padding:0;">
+                MSME Saathi — Administrative Control Center
             </h1>
             """,
             unsafe_allow_html=True
@@ -82,7 +82,7 @@ elif authentication_status:
         st.markdown(
             f"""
             <div class="welcome-text-container" style="text-align:right; white-space:nowrap; margin-top:2px; margin-bottom:-4px;">
-                <span style="font-family:'Syne',sans-serif; font-size:12px; font-weight:500; color:rgba(242,242,245,0.55); letter-spacing:0.04em;">
+                <span style="font-family:'Syne',sans-serif; font-size:12px; font-weight:500; color:var(--text-color-muted); letter-spacing:0.04em;">
                     Welcome, {name}
                 </span>
             </div>
@@ -92,10 +92,10 @@ elif authentication_status:
         authenticator.logout('Logout', 'main', key='logout_btn')
 
     # Tight divider
-    st.markdown("<hr style='margin: 8px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 8px 0; border: 0; border-top: 1px solid var(--border-color);'>", unsafe_allow_html=True)
 
     # --- SYSTEM HEALTH DASHBOARD ---
-    st.markdown("<h3 style='margin: 8px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:#F2F2F5;'>🖥️ System Health Dashboard</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin: 8px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:var(--text-color);'>System Health Dashboard</h3>", unsafe_allow_html=True)
 
     # 1. Fetch ChromaDB document count
     db_count = 0
@@ -129,7 +129,7 @@ elif authentication_status:
         grv_count = "Error"
 
     # 3. Fetch active sessions
-    sessions_count = "N/A"
+    sessions_count = 0
     try:
         r = requests.get("http://127.0.0.1:8000/internal/session-stats", timeout=10)
         if r.status_code == 200:
@@ -153,7 +153,7 @@ elif authentication_status:
         render_uptime_card()
 
     # --- BOT PERFORMANCE & ACTIVITY METRICS ---
-    st.markdown("<h3 style='margin: 12px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:#F2F2F5;'>📊 Bot Performance & Activity Metrics</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin: 12px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:var(--text-color);'>Bot Performance & Activity Metrics</h3>", unsafe_allow_html=True)
 
     # 5. Fetch Total Messages Processed
     msg_count = 0
@@ -213,7 +213,7 @@ elif authentication_status:
     h8.metric(label="Resolved Grievances", value=resolved_count)
 
     # --- OPERATIONAL & QUALITY METRICS (third row) ---
-    st.markdown("<h3 style='margin: 12px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:#F2F2F5;'>⚙️ Operational & Quality Metrics</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin: 12px 0 4px 0; font-family:\"Syne\",sans-serif; font-size:18px; font-weight:700; color:var(--text-color);'>Operational & Quality Metrics</h3>", unsafe_allow_html=True)
 
     # 9. Fetch Critical & High Severity Grievances
     critical_high_count = 0

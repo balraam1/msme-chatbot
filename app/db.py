@@ -95,6 +95,18 @@ def init_db():
     except sqlite3.OperationalError:
         pass # Column already exists
 
+    # Migration: Add query_text and sentiment columns to events if they don't exist
+    try:
+        cursor.execute("ALTER TABLE events ADD COLUMN query_text TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE events ADD COLUMN sentiment TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+
     conn.close()
     
     # Check for legacy grievances.txt file migration

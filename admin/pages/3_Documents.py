@@ -17,7 +17,7 @@ if "authentication_status" not in st.session_state or not st.session_state["auth
     st.error("Please login from the main page first.")
     st.stop()
 
-st.title("📄 Document Manager (ChromaDB)")
+st.title("Document Manager (ChromaDB)")
 
 DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "documents")
 os.makedirs(DOCS_DIR, exist_ok=True)
@@ -55,7 +55,7 @@ def trigger_ingest():
         st.error(f"Failed to connect to the backend API: {e}")
 
 # --- SECTION A: CURRENT DOCUMENTS ---
-st.write("### 📂 Ingested Documents")
+st.write("### Ingested Documents")
 docs = get_documents_list()
 
 if not docs:
@@ -69,7 +69,7 @@ else:
         filename = doc["filename"]
         col1, col2, col3 = st.columns([6, 1.5, 1.5])
         with col1:
-            st.write(f"📄 **{filename}** ({doc['size_kb']} KB)")
+            st.write(f"**{filename}** ({doc['size_kb']} KB)")
         with col2:
             if st.button("Preview", key=f"prev_{filename}"):
                 file_path = os.path.join(DOCS_DIR, filename)
@@ -87,7 +87,7 @@ else:
                 st.rerun()
 
 # --- SECTION B: ADD NEW DOCUMENT ---
-st.write("### 📤 Upload New Document")
+st.write("### Upload New Document")
 uploaded_file = st.file_uploader("Upload a scheme document (.txt or .pdf)", type=["txt", "pdf"])
 
 if uploaded_file is not None:
@@ -103,7 +103,7 @@ if uploaded_file is not None:
         st.rerun()
 
 # --- SECTION C: CHROMADB STATUS ---
-st.write("### 📡 ChromaDB Status")
+st.write("### ChromaDB Status")
 try:
     import sys
     import importlib

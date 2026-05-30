@@ -999,7 +999,8 @@ async def chat_endpoint(payload: ChatRequest, request: Request, background_tasks
         intent=structured.get("intent", "general"),
         response_ms=elapsed_ms,
         user_agent=request.headers.get("user-agent", "unknown"),
-        extra=extra_data
+        extra=extra_data,
+        query_text=payload.message
     )
         
     return ChatResponse(reply=reply_to_return, structured=structured, sessionId=session_id, language=user_lang)
