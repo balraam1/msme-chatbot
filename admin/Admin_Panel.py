@@ -81,7 +81,7 @@ elif authentication_status:
     with auth_col:
         st.markdown(
             f"""
-            <div class="welcome-text-container" style="text-align:right; white-space:nowrap; margin-top:12px; margin-bottom:8px;">
+            <div class="welcome-text-container" style="text-align:right; white-space:nowrap; margin-top:12px; margin-bottom:4px;">
                 <span style="font-family:'Syne',sans-serif; font-size:12px; font-weight:500; color:var(--text-color-muted); letter-spacing:0.04em;">
                     Welcome, {name}
                 </span>

@@ -265,15 +265,16 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div[data-testid="column"]:has(.welcome-text-container) div.stButton button {
+        div:has(.welcome-text-container) div.stButton button {
             margin-left: auto !important;
-            margin-top: 16px !important;
+            margin-top: 4px !important;
             display: block !important;
-            padding: 4px 10px !important;
-            font-size: 11px !important;
-            line-height: 1.2 !important;
-            min-height: 28px !important;
+            padding: 2px 8px !important;
+            font-size: 10px !important;
+            line-height: 1.1 !important;
+            min-height: 24px !important;
             height: auto !important;
+            width: fit-content !important;
         }
 
         /* Primary CTA Button */
@@ -662,15 +663,16 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div[data-testid="column"]:has(.welcome-text-container) div.stButton button {
+        div:has(.welcome-text-container) div.stButton button {
             margin-left: auto !important;
-            margin-top: 16px !important;
+            margin-top: 4px !important;
             display: block !important;
-            padding: 4px 10px !important;
-            font-size: 11px !important;
-            line-height: 1.2 !important;
-            min-height: 28px !important;
+            padding: 2px 8px !important;
+            font-size: 10px !important;
+            line-height: 1.1 !important;
+            min-height: 24px !important;
             height: auto !important;
+            width: fit-content !important;
         }
 
         /* Primary CTA Button */
