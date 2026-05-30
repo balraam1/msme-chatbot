@@ -228,7 +228,7 @@ with tab4:
     
     col_t4_1, col_t4_2 = st.columns(2)
     with col_t4_1:
-        st.subheader("Hourly Average Response Time (ms)")
+        st.subheader("Hourly Avg Response Time (ms)")
         # Resample response_ms by hour
         df_perf = df_events[df_events["response_ms"].notnull()].copy()
         if not df_perf.empty:
