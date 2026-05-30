@@ -233,7 +233,7 @@ with tab4:
         df_perf = df_events[df_events["response_ms"].notnull()].copy()
         if not df_perf.empty:
             df_perf.set_index("timestamp", inplace=True)
-            hourly_perf = df_perf["response_ms"].resample("H").mean().reset_index()
+            hourly_perf = df_perf["response_ms"].resample("h").mean().reset_index()
             
             fig_perf = px.line(hourly_perf, x="timestamp", y="response_ms", color_discrete_sequence=["#C4FF32"])
             fig_perf.update_yaxes(title="Avg Latency (ms)")
