@@ -267,7 +267,7 @@ def apply_custom_theme():
         /* Right-align and make smaller the logout button inside the welcome container column */
         div[data-testid="column"]:has(.welcome-text-container) div.stButton button {
             margin-left: auto !important;
-            margin-top: 8px !important;
+            margin-top: 16px !important;
             display: block !important;
             padding: 4px 10px !important;
             font-size: 11px !important;
@@ -664,7 +664,7 @@ def apply_custom_theme():
         /* Right-align and make smaller the logout button inside the welcome container column */
         div[data-testid="column"]:has(.welcome-text-container) div.stButton button {
             margin-left: auto !important;
-            margin-top: 8px !important;
+            margin-top: 16px !important;
             display: block !important;
             padding: 4px 10px !important;
             font-size: 11px !important;
