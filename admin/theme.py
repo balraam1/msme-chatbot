@@ -265,12 +265,12 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div:has(.welcome-text-container) div.stButton {
+        div[data-testid*="column"]:has(.welcome-text-container) div.stButton {
             display: flex !important;
             justify-content: flex-end !important;
             width: 100% !important;
         }
-        div:has(.welcome-text-container) div.stButton button {
+        div[data-testid*="column"]:has(.welcome-text-container) div.stButton button {
             margin-top: 4px !important;
             padding: 2px 8px !important;
             font-size: 10px !important;
@@ -666,12 +666,12 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div:has(.welcome-text-container) div.stButton {
+        div[data-testid*="column"]:has(.welcome-text-container) div.stButton {
             display: flex !important;
             justify-content: flex-end !important;
             width: 100% !important;
         }
-        div:has(.welcome-text-container) div.stButton button {
+        div[data-testid*="column"]:has(.welcome-text-container) div.stButton button {
             margin-top: 4px !important;
             padding: 2px 8px !important;
             font-size: 10px !important;
