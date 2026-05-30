@@ -277,7 +277,8 @@ def apply_custom_theme():
             line-height: 1.1 !important;
             min-height: 24px !important;
             height: auto !important;
-            width: fit-content !important;
+            width: 61px !important;
+            border-radius: 0px !important;
         }
 
         /* Primary CTA Button */
@@ -678,7 +679,8 @@ def apply_custom_theme():
             line-height: 1.1 !important;
             min-height: 24px !important;
             height: auto !important;
-            width: fit-content !important;
+            width: 61px !important;
+            border-radius: 0px !important;
         }
 
         /* Primary CTA Button */
