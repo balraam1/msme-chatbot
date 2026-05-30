@@ -265,17 +265,23 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div[data-testid*="column"]:has(.welcome-text-container) div.stButton {
+        div.st-key-auth_container, div[class*="st-key-auth_container"] {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            width: 100% !important;
+        }
+        div.st-key-auth_container div.stButton, div[class*="st-key-auth_container"] div.stButton {
             display: flex !important;
             justify-content: flex-end !important;
             width: 100% !important;
         }
-        div[data-testid*="column"]:has(.welcome-text-container) div.stButton button {
-            margin-top: 4px !important;
-            padding: 2px 8px !important;
-            font-size: 10px !important;
-            line-height: 1.1 !important;
-            min-height: 24px !important;
+        div.st-key-auth_container div.stButton button, div[class*="st-key-auth_container"] div.stButton button {
+            margin-top: 2px !important;
+            padding: 1px 4px !important;
+            font-size: 8.5px !important;
+            line-height: 1.0 !important;
+            min-height: 18px !important;
             height: auto !important;
             width: 61px !important;
             border-radius: 0px !important;
@@ -667,17 +673,23 @@ def apply_custom_theme():
         }
 
         /* Right-align and make smaller the logout button inside the welcome container column */
-        div[data-testid*="column"]:has(.welcome-text-container) div.stButton {
+        div.st-key-auth_container, div[class*="st-key-auth_container"] {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            width: 100% !important;
+        }
+        div.st-key-auth_container div.stButton, div[class*="st-key-auth_container"] div.stButton {
             display: flex !important;
             justify-content: flex-end !important;
             width: 100% !important;
         }
-        div[data-testid*="column"]:has(.welcome-text-container) div.stButton button {
-            margin-top: 4px !important;
-            padding: 2px 8px !important;
-            font-size: 10px !important;
-            line-height: 1.1 !important;
-            min-height: 24px !important;
+        div.st-key-auth_container div.stButton button, div[class*="st-key-auth_container"] div.stButton button {
+            margin-top: 2px !important;
+            padding: 1px 4px !important;
+            font-size: 8.5px !important;
+            line-height: 1.0 !important;
+            min-height: 18px !important;
             height: auto !important;
             width: 61px !important;
             border-radius: 0px !important;
