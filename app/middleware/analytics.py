@@ -83,7 +83,7 @@ def log_event(
                 scheme_name,
                 language,
                 response_ms,
-                1 if is_fallback else 0,
+                is_fallback,
                 user_agent,
                 extra_json,
                 query_text,

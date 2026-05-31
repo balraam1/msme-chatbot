@@ -1136,7 +1136,8 @@ async def get_internal_session_stats(request: Request):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT COUNT(*) FROM events WHERE event_type = 'message' AND date(timestamp) = date('now')")
+        today_start = datetime.combine(datetime.now().date(), datetime.min.time())
+        cursor.execute("SELECT COUNT(*) FROM events WHERE event_type = 'message' AND timestamp >= ?", (today_start,))
         total_messages_today = cursor.fetchone()[0]
     except Exception:
         pass

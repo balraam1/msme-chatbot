@@ -35,19 +35,24 @@ with col_f2:
 @st.cache_data(ttl=10) # cache for 10 seconds
 def load_events_data(start, end):
     conn = get_db_connection()
+    
+    # Convert start/end dates to datetime objects for database-agnostic range matching
+    start_dt = datetime.combine(start, datetime.min.time())
+    end_dt = datetime.combine(end, datetime.max.time())
+    
     # Query events
     query = """
         SELECT * FROM events 
-        WHERE date(timestamp) >= date(?) AND date(timestamp) <= date(?)
+        WHERE timestamp >= ? AND timestamp <= ?
     """
-    df_events = pd.read_sql_query(query, conn, params=(str(start), str(end)))
+    df_events = pd.read_sql_query(query, conn, params=(start_dt, end_dt))
     
     # Query grievances
     query_grv = """
         SELECT * FROM grievances 
-        WHERE date(created_at) >= date(?) AND date(created_at) <= date(?)
+        WHERE created_at >= ? AND created_at <= ?
     """
-    df_grv = pd.read_sql_query(query_grv, conn, params=(str(start), str(end)))
+    df_grv = pd.read_sql_query(query_grv, conn, params=(start_dt, end_dt))
     conn.close()
     
     # Parse timestamps
