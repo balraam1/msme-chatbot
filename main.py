@@ -1199,6 +1199,7 @@ async def delete_session_endpoint(session_id: str, request: Request):
 app.mount("/static", StaticFiles(directory=".", html=False), name="static")
 
 @app.get("/")
+@app.head("/")
 @limiter.limit("30/minute")
 async def serve_index(request: Request):
     return FileResponse("index.html")
