@@ -14,9 +14,10 @@ def analyze_sentiment(text: str) -> str:
     
     # Frustrated/Negative keywords
     negative_keywords = [
-        "delay", "slow", "late", "pending", "not approved", "rejected",
-        "problem", "issue", "complaint", "grievance", "fraud", "scam",
-        "deeri", "delay", "ruk gaya", "pareshan", "samasya", "shikayat",
+        "delay", "slow", "late", "pending", "not approved", "rejected", "reject",
+        "problem", "issue", "complaint", "grievance", "fraud", "scam", "bad", "worst",
+        "useless", "waste", "poor", "pathetic", "terrible", "dont help", "not help", "no help",
+        "refuse", "refused", "deeri", "delay", "ruk gaya", "pareshan", "samasya", "shikayat",
         "galti", "galat", "kharab", "bekar", "paisa fasa", "nahi mila",
         "nhi mila", "attka", "टका", "लटका", "देरी", "धीमा", "परेशान",
         "समस्या", "शिकायत", "गलत", "धोखा", "पेंडिंग", "नहीं हुआ", "रिजेक्ट"
@@ -32,9 +33,9 @@ def analyze_sentiment(text: str) -> str:
     
     # Highly critical/angry indicators
     angry_indicators = [
-        "fraud", "dhokha", "loot", "fake", "badtameezi", "ghoos", "bribery", 
-        "angry", "chutiya", "bakwas", "corruption", "corrupt", "bhrashtachar",
-        "chor", "chori", "fasa diya", "loot liya", "luta"
+        "fraud", "dhokha", "loot", "fake", "badtameezi", "ghoos", "bribery", "bribe", "bribes",
+        "harass", "harassment", "harassed", "angry", "chutiya", "bakwas", "corruption", "corrupt", 
+        "bhrashtachar", "chor", "chori", "fasa diya", "loot liya", "luta"
     ]
     
     if any(ai in text_lower for ai in angry_indicators):
