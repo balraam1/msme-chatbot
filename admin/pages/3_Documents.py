@@ -41,9 +41,9 @@ def trigger_ingest():
     try:
         # Use default basic credentials config
         admin_user = os.environ.get("ADMIN_USERNAME", "admin")
-        # For security, we assume the password 'admin' is configured as the default
+        chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
         r = requests.post(
-            "http://127.0.0.1:8000/admin/documents/ingest",
+            f"{chatbot_api_url}/admin/documents/ingest",
             auth=HTTPBasicAuth(admin_user, "admin"),
             timeout=30
         )

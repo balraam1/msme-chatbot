@@ -132,7 +132,8 @@ elif authentication_status:
     # 3. Fetch active sessions
     sessions_count = 0
     try:
-        r = requests.get("http://127.0.0.1:8000/internal/session-stats", timeout=10)
+        chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
+        r = requests.get(f"{chatbot_api_url}/internal/session-stats", timeout=10)
         if r.status_code == 200:
             sessions_count = r.json().get("active_sessions", 0)
     except Exception:

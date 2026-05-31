@@ -20,7 +20,8 @@ st.title("Active User Sessions")
 # Fetch session stats and list
 def fetch_sessions():
     try:
-        r = requests.get("http://127.0.0.1:8000/internal/session-stats", timeout=10)
+        chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
+        r = requests.get(f"{chatbot_api_url}/internal/session-stats", timeout=10)
         if r.status_code == 200:
             return r.json().get("sessions", [])
     except Exception as e:
@@ -57,7 +58,8 @@ else:
         with col2:
             if st.button("Terminate Session", key=f"term_{sid}", type="primary"):
                 try:
-                    r = requests.delete(f"http://127.0.0.1:8000/internal/session/{sid}", timeout=10)
+                    chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
+                    r = requests.delete(f"{chatbot_api_url}/internal/session/{sid}", timeout=10)
                     if r.status_code == 200:
                         st.success(f"Session {sid_short} terminated successfully!")
                         st.rerun()
