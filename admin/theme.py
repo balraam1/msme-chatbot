@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import streamlit.config as _stconfig
 
@@ -27,6 +28,17 @@ def apply_custom_theme():
                 <a href="?theme={target_theme}" target="_self" class="theme-toggle-link" style="text-decoration: none;">
                     <div class="theme-toggle-btn-circle">{toggle_text}</div>
                 </a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        # Database Connection Status indicator
+        db_type = "PostgreSQL (Cloud)" if os.environ.get("DATABASE_URL") else "SQLite (Local)"
+        color = "#22c55e" if os.environ.get("DATABASE_URL") else "#eab308"
+        st.markdown(
+            f"""
+            <div style="text-align: center; font-size: 10px; font-weight: 500; color: {color}; margin-top: -4px; margin-bottom: 8px;">
+                Active DB: {db_type}
             </div>
             """,
             unsafe_allow_html=True
