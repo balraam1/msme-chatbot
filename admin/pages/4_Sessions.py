@@ -20,10 +20,15 @@ st.title("Active User Sessions")
 # Fetch session stats and list
 def fetch_sessions():
     try:
+        from app.auth import create_admin_token
+        token = create_admin_token()
+        headers = {"Authorization": f"Bearer {token}"}
         chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
-        r = requests.get(f"{chatbot_api_url}/internal/session-stats", timeout=10)
+        r = requests.get(f"{chatbot_api_url}/internal/session-stats", headers=headers, timeout=10)
         if r.status_code == 200:
             return r.json().get("sessions", [])
+        else:
+            st.error(f"Could not connect to FastAPI server to retrieve sessions: Status {r.status_code} - {r.text}")
     except Exception as e:
         st.error(f"Could not connect to FastAPI server to retrieve sessions: {e}")
     return []
@@ -58,8 +63,11 @@ else:
         with col2:
             if st.button("Terminate Session", key=f"term_{sid}", type="primary"):
                 try:
+                    from app.auth import create_admin_token
+                    token = create_admin_token()
+                    headers = {"Authorization": f"Bearer {token}"}
                     chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
-                    r = requests.delete(f"{chatbot_api_url}/internal/session/{sid}", timeout=10)
+                    r = requests.delete(f"{chatbot_api_url}/internal/session/{sid}", headers=headers, timeout=10)
                     if r.status_code == 200:
                         st.success(f"Session {sid_short} terminated successfully!")
                         st.rerun()

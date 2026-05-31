@@ -1121,10 +1121,11 @@ async def admin_documents_ingest(request: Request, username: str = Depends(get_a
 
 @app.get("/internal/session-stats")
 async def get_internal_session_stats(request: Request):
-    # Enforce localhost-only via IP check
+    # Allow localhost bypass or valid admin authorization
     client_ip = request.client.host
     if client_ip not in ("127.0.0.1", "localhost", "::1"):
-        raise HTTPException(status_code=403, detail="Access denied. Localhost only.")
+        await get_admin_user(request)
+        
         
     active_sessions_count = len(sessions)
     
@@ -1181,6 +1182,11 @@ async def get_internal_session_stats(request: Request):
 
 @app.delete("/internal/session/{session_id}")
 async def delete_session_endpoint(session_id: str, request: Request):
+    # Allow localhost bypass or valid admin authorization
+    client_ip = request.client.host
+    if client_ip not in ("127.0.0.1", "localhost", "::1"):
+        await get_admin_user(request)
+        
     if session_id in sessions:
         del sessions[session_id]
         return {"status": "ok", "message": f"Session {session_id} terminated"}

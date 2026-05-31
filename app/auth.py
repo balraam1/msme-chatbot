@@ -1,7 +1,8 @@
 import os
+import base64
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import bcrypt
 
@@ -45,18 +46,39 @@ def verify_admin_token(token: str) -> bool:
     except JWTError:
         return False
 
-def get_admin_user(credentials: HTTPBasicCredentials = Depends(security)) -> str:
+async def get_admin_user(request: Request) -> str:
     """
-    FastAPI dependency that secures admin routes using HTTP Basic Auth.
-    Matches username against ADMIN_USERNAME and verifies password against ADMIN_PASSWORD_HASH.
+    FastAPI dependency that secures admin routes.
+    Supports either HTTP Basic Auth (username/password) or Bearer Token (JWT).
     """
-    correct_username = credentials.username == ADMIN_USERNAME
-    correct_password = verify_password(credentials.password, ADMIN_PASSWORD_HASH)
-    
-    if not (correct_username and correct_password):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect admin username or password",
-            headers={"WWW-Authenticate": "Basic"},
+            detail="Missing Authorization Header",
+            headers={"WWW-Authenticate": "Basic, Bearer"},
         )
-    return credentials.username
+        
+    if auth_header.startswith("Bearer "):
+        token = auth_header[len("Bearer "):].strip()
+        if verify_admin_token(token):
+            return "admin"
+            
+    elif auth_header.startswith("Basic "):
+        try:
+            encoded = auth_header[len("Basic "):].strip()
+            decoded = base64.b64decode(encoded).decode("utf-8")
+            username, password = decoded.split(":", 1)
+            correct_username = username == ADMIN_USERNAME
+            correct_password = verify_password(password, ADMIN_PASSWORD_HASH)
+            if correct_username and correct_password:
+                return username
+        except Exception:
+            pass
+            
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid credentials or token",
+        headers={"WWW-Authenticate": "Basic, Bearer"},
+    )
+

@@ -39,12 +39,13 @@ def get_documents_list():
 # Trigger full re-ingestion HTTP request
 def trigger_ingest():
     try:
-        # Use default basic credentials config
-        admin_user = os.environ.get("ADMIN_USERNAME", "admin")
+        from app.auth import create_admin_token
+        token = create_admin_token()
+        headers = {"Authorization": f"Bearer {token}"}
         chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
         r = requests.post(
             f"{chatbot_api_url}/admin/documents/ingest",
-            auth=HTTPBasicAuth(admin_user, "admin"),
+            headers=headers,
             timeout=30
         )
         if r.status_code == 200:
