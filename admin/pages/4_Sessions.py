@@ -23,7 +23,9 @@ def fetch_sessions():
         from app.auth import create_admin_token
         token = create_admin_token()
         headers = {"Authorization": f"Bearer {token}"}
-        chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
+        chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000").rstrip("/")
+        if chatbot_api_url.endswith("/api"):
+            chatbot_api_url = chatbot_api_url[:-4]
         r = requests.get(f"{chatbot_api_url}/internal/session-stats", headers=headers, timeout=10)
         if r.status_code == 200:
             return r.json().get("sessions", [])
@@ -66,7 +68,9 @@ else:
                     from app.auth import create_admin_token
                     token = create_admin_token()
                     headers = {"Authorization": f"Bearer {token}"}
-                    chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000")
+                    chatbot_api_url = os.environ.get("CHATBOT_API_URL", "http://127.0.0.1:8000").rstrip("/")
+                    if chatbot_api_url.endswith("/api"):
+                        chatbot_api_url = chatbot_api_url[:-4]
                     r = requests.delete(f"{chatbot_api_url}/internal/session/{sid}", headers=headers, timeout=10)
                     if r.status_code == 200:
                         st.success(f"Session {sid_short} terminated successfully!")
