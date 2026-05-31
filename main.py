@@ -1193,6 +1193,46 @@ async def delete_session_endpoint(session_id: str, request: Request):
         return {"status": "ok", "message": f"Session {session_id} terminated"}
     raise HTTPException(status_code=404, detail="Session not found")
 
+@app.get("/internal/debug-db")
+async def debug_db_endpoint(request: Request):
+    # Allow localhost bypass or valid admin authorization
+    client_ip = request.client.host
+    if client_ip not in ("127.0.0.1", "localhost", "::1"):
+        await get_admin_user(request)
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM events")
+        events_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM grievances")
+        grievances_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT * FROM events ORDER BY timestamp DESC LIMIT 5")
+        last_events = []
+        for row in cursor.fetchall():
+            last_events.append({
+                "id": row["id"],
+                "session_id": row["session_id"],
+                "event_type": row["event_type"],
+                "timestamp": str(row["timestamp"]),
+                "query_text": row["query_text"] if "query_text" in row.keys() else None,
+                "sentiment": row["sentiment"] if "sentiment" in row.keys() else None
+            })
+            
+        return {
+            "status": "ok",
+            "db_type": "PostgreSQL" if os.environ.get("DATABASE_URL") else "SQLite",
+            "events_count": events_count,
+            "grievances_count": grievances_count,
+            "last_events": last_events
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+    finally:
+        conn.close()
+
 # ---------------------------------------------------------------------------
 # Static File Serving
 # ---------------------------------------------------------------------------
