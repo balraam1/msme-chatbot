@@ -1,67 +1,49 @@
 import re
-from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
-from presidio_anonymizer import AnonymizerEngine
-
-# Initialize Engines
-analyzer = AnalyzerEngine()
-anonymizer = AnonymizerEngine()
-
-# Define patterns
-aadhaar_pattern = Pattern(name="aadhaar_pattern", regex=r"\b\d{4}\s?\d{4}\s?\d{4}\b", score=0.85)
-pan_pattern = Pattern(name="pan_pattern", regex=r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b", score=0.85)
-mobile_pattern = Pattern(name="mobile_pattern", regex=r"\b[6-9]\d{9}\b", score=0.85)
-uan_pattern = Pattern(name="uan_pattern", regex=r"\b\d{12}\b", score=0.80)
-ifsc_pattern = Pattern(name="ifsc_pattern", regex=r"\b[A-Z]{4}0[A-Z0-9]{6}\b", score=0.85)
-
-# Create custom PatternRecognizers
-aadhaar_recognizer = PatternRecognizer(supported_entity="AADHAAR_NUMBER", patterns=[aadhaar_pattern], context=["aadhaar", "uidai", "aadhar"])
-pan_recognizer = PatternRecognizer(supported_entity="PAN_NUMBER", patterns=[pan_pattern], context=["pan", "income tax", "pancard"])
-mobile_recognizer = PatternRecognizer(supported_entity="PHONE_NUMBER", patterns=[mobile_pattern], context=["mobile", "phone", "number", "call"])
-uan_recognizer = PatternRecognizer(supported_entity="UAN_NUMBER", patterns=[uan_pattern], context=["uan", "epfo", "pf"])
-ifsc_recognizer = PatternRecognizer(supported_entity="IFSC_CODE", patterns=[ifsc_pattern], context=["ifsc", "bank", "branch", "code"])
-
-# Add custom recognizers to the analyzer
-analyzer.registry.add_recognizer(aadhaar_recognizer)
-analyzer.registry.add_recognizer(pan_recognizer)
-analyzer.registry.add_recognizer(mobile_recognizer)
-# To preferentially tag 12-digit numbers as AADHAAR rather than UAN, we add UAN with a slightly lower score (0.80 vs 0.85)
-analyzer.registry.add_recognizer(uan_recognizer)
-analyzer.registry.add_recognizer(ifsc_recognizer)
 
 def scrub_pii(text: str) -> str:
     """
-    Analyzes text and replaces any Indian PII entities with their type tags.
+    Analyzes text and replaces any Indian PII entities with their type tags
+    using a fast, pure-python regular expression engine.
     """
     if not text:
         return ""
-        
-    # Analyze text
-    results = analyzer.analyze(
-        text=text,
-        language="en",
-        entities=["AADHAAR_NUMBER", "PAN_NUMBER", "PHONE_NUMBER", "UAN_NUMBER", "IFSC_CODE", "EMAIL_ADDRESS", "IP_ADDRESS"]
-    )
+
+    patterns = {
+        "AADHAAR_NUMBER": r"\b\d{4}\s?\d{4}\s?\d{4}\b",
+        "PAN_NUMBER": r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b",
+        "PHONE_NUMBER": r"\b[6-9]\d{9}\b",
+        "IFSC_CODE": r"\b[A-Z]{4}0[A-Z0-9]{6}\b",
+        "EMAIL_ADDRESS": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+        "IP_ADDRESS": r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
+    }
+
+    matches = []
+    for entity_type, regex in patterns.items():
+        for match in re.finditer(regex, text):
+            matches.append({
+                "start": match.start(),
+                "end": match.end(),
+                "type": entity_type
+            })
+
+    # Sort matches by start index, and for overlapping spans, keep the one with larger span
+    matches = sorted(matches, key=lambda x: (x["start"], -x["end"]))
     
-    # Sort results by character index in reverse to perform clean text substitution
-    sorted_results = sorted(results, key=lambda x: x.start, reverse=True)
-    
+    filtered_matches = []
+    last_end = -1
+    for m in matches:
+        if m["start"] >= last_end:
+            filtered_matches.append(m)
+            last_end = m["end"]
+
+    # Sort in reverse order of start index to perform clean text substitution
+    filtered_matches = sorted(filtered_matches, key=lambda x: x["start"], reverse=True)
+
     scrubbed_text = text
-    for result in sorted_results:
-        # Check overlaps: if a 12 digit number is detected as both UAN and Aadhaar, prefer AADHAAR
-        entity_type = result.entity_type
-        if entity_type == "UAN_NUMBER":
-            # Check if there is an AADHAAR_NUMBER entity covering the exact same span
-            is_aadhaar = any(
-                r.entity_type == "AADHAAR_NUMBER" and r.start == result.start and r.end == result.end
-                for r in results
-            )
-            if is_aadhaar:
-                continue  # Skip because we will replace it with AADHAAR_NUMBER instead
-        
-        # Replace entity with tag
-        tag = f"<{entity_type}>"
-        scrubbed_text = scrubbed_text[:result.start] + tag + scrubbed_text[result.end:]
-        
+    for m in filtered_matches:
+        tag = f"<{m['type']}>"
+        scrubbed_text = scrubbed_text[:m["start"]] + tag + scrubbed_text[m["end"]:]
+
     return scrubbed_text
 
 def generate_consent_notice(lang: str = "en") -> str:
