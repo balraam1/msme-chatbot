@@ -258,7 +258,7 @@ with tab4:
             st.info("No latency distribution available.")
 
     # Fallback Rate Calculation
-    fallback_msgs = len(df_events[df_events["is_fallback"] == 1])
+    fallback_msgs = len(df_events[df_events["is_fallback"].fillna(False).astype(bool) == True])
     total_msgs = len(df_events[df_events["event_type"] == "message"])
     fallback_rate = (fallback_msgs / total_msgs * 100) if total_msgs > 0 else 0.0
     

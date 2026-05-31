@@ -152,9 +152,10 @@ elif authentication_status:
         st.metric(label="Uptime", value=uptime_str)
 
     # Render all 4 metrics in a single horizontal row
+    db_label = "PostgreSQL" if os.environ.get("DATABASE_URL") else "SQLite"
     h1, h2, h3, h4 = st.columns(4)
     h1.metric(label="ChromaDB Corpus Chunks", value=db_count)
-    h2.metric(label="Total SQLite Grievances", value=grv_count)
+    h2.metric(label=f"Total {db_label} Grievances", value=grv_count)
     h3.metric(label="Active Chat Sessions", value=sessions_count)
     with h4:
         render_uptime_card()
@@ -246,17 +247,17 @@ elif authentication_status:
     except Exception:
         hindi_count = "Error"
 
-    # 11. Fetch Fallback Queries (is_fallback = 1)
+    # 11. Fetch Fallback Queries (is_fallback = True)
     fallback_count = 0
     try:
         from app.db import get_db_connection
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM events WHERE is_fallback = 1")
+        cursor.execute("SELECT COUNT(*) FROM events WHERE is_fallback = ?", (True,))
         fallback_count = cursor.fetchone()[0]
         conn.close()
     except Exception:
-        fallback_count = "Error"
+        fallback_count = 0
 
     # 12. Fetch Pending Appointments
     pending_appt_count = 0
