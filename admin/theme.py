@@ -284,7 +284,7 @@ def apply_custom_theme():
             min-height: 18px !important;
             height: auto !important;
             width: 61px !important;
-            border-radius: 0px !important;
+            border-radius: 20px !important;
         }
 
         /* Primary CTA Button */
@@ -692,7 +692,7 @@ def apply_custom_theme():
             min-height: 18px !important;
             height: auto !important;
             width: 61px !important;
-            border-radius: 0px !important;
+            border-radius: 20px !important;
         }
 
         /* Primary CTA Button */

@@ -24,3 +24,4 @@ langdetect
 python-multipart
 bcrypt
 passlib[bcrypt]
+psycopg2-binary
