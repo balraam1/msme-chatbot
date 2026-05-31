@@ -49,8 +49,13 @@ def verify_admin_token(token: str) -> bool:
 async def get_admin_user(request: Request) -> str:
     """
     FastAPI dependency that secures admin routes.
-    Supports either HTTP Basic Auth (username/password) or Bearer Token (JWT).
+    Supports either HTTP Basic Auth (username/password), Bearer Token (JWT), or a token query parameter.
     """
+    # 1. Check for token in query parameters (convenient for browser debug views)
+    token_param = request.query_params.get("token")
+    if token_param and verify_admin_token(token_param):
+        return "admin"
+        
     auth_header = request.headers.get("Authorization")
     if not auth_header:
         raise HTTPException(
